@@ -1,0 +1,53 @@
+import argparse
+from utils import *
+from sever import *
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--batch-size', type=int, default=128)
+    parser.add_argument('--lr', type=float, default=0.1)
+    parser.add_argument('--epochs_pcl', type=int, default=5)
+    parser.add_argument('--premodelnum', type=int, default=4)
+    parser.add_argument('--logdir', type=str, required=False, default="./logs/", help='Log directory path')
+    parser.add_argument('--trial', type=int, default=100)
+    parser.add_argument('--num_iter', type=int, default=100)
+    parser.add_argument('--K', type=int, default=4)
+    parser.add_argument('--eps', type=int, default=0.4)
+    parser.add_argument('--num_batch', type=int, default=6)
+    parser.add_argument('--C', type=float, default=40.)
+    parser.add_argument('--minC', type=float, default=0.)
+    parser.add_argument('--flop_C', type=float, default=20.)
+    parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
+                        help='Optimizer momentum (default: 0.9)')
+    parser.add_argument('--weight-decay', type=float, default=2e-5,
+                        help='weight decay (default: 2e-5)')
+    parser.add_argument('--skd-eps', default=[1], nargs='+', type=float)
+    parser.add_argument('--skd-stage', default=[1, 2, 3, 4], nargs='+', type=int)
+    parser.add_argument('--skd-loss-weight', default=1, type=float)
+    parser.add_argument('--skd-temperature', default=1, type=float)
+    parser.add_argument('--num-classes', default=100, type=int)
+    parser.add_argument('--gt-loss-weight', default=1., type=float)
+    parser.add_argument('--kd-loss-weight', default=1., type=float)
+    parser.add_argument('--zero_proxy', type=str, default='naswot')
+    parser.add_argument('--minflop_C', type=float, default=0.)
+    parser.add_argument('--yuedayuehaodezhi', type=float, default=0.5)
+    parser.add_argument('--a', type=float, default=0.25)
+    parser.add_argument('--b', type=float, default=0.25)
+    parser.add_argument('--A', type=float, default=0.5)
+    parser.add_argument('--B', type=float, default=0.5)
+    parser.add_argument('--c', type=float, default=0.25)
+    parser.add_argument('--d', type=float, default=0.25)
+    parser.add_argument('--dataset', type=str, default='SVHN')
+    parser.add_argument('--partition', type=str, default='noniid')
+    parser.add_argument('--epochs', type=int, default=5)
+    parser.add_argument('--clientnum', type=int, default=10)
+    parser.add_argument('--comm_round', type=int, default=20)
+    parser.add_argument('--beta', type=float, default=0.5)
+    args = parser.parse_args()
+    return args
+if __name__ == '__main__':
+    args=get_args()
+    train_dataset, test_dataset = load_data(args)
+
+    net_dataidx_map, traindata_cls_counts = split_data(args, train_dataset, test_dataset)
+    train_dataset.targets = torch.from_numpy(train_dataset.targets)
+    federated_average(train_dataset, test_dataset, args, net_dataidx_map)
